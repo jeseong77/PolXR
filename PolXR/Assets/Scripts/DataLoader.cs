@@ -9,7 +9,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 //using Fusion;
 
 
-
 [System.Serializable]
 public class Centroid
 {
@@ -89,7 +88,7 @@ public class DataLoader : MonoBehaviour
         }
     }
 
-    void Awake()
+    void Start()
     {
         radarShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Shaders/RadarShader.shader");
         if (radarShader == null)
@@ -253,9 +252,9 @@ public class DataLoader : MonoBehaviour
                         //radarObj.AddComponent<RotationAxisConstraint>();
 
                         // Add necessary components to the parent segment container
-                        segmentContainer.AddComponent<BoxCollider>();
+                        //segmentContainer.AddComponent<BoxCollider>();
                         //segmentContainer.AddComponent<ConstraintManager>();
-                        segmentContainer.AddComponent<MyRadarEvents>();
+                        //segmentContainer.AddComponent<MyRadarEvents>();
                     }
                 }
             }
@@ -347,6 +346,9 @@ public class DataLoader : MonoBehaviour
             lineRenderer.startWidth = 0.1f;
             lineRenderer.endWidth = 0.1f;
 
+            // Add a MeshCollider to the LineRenderer
+            AttachBoxColliders(lineObj, rotatedVertices.ToArray());
+
             // Add a click handler
             foreach (Transform child in parentContainer.transform)
             {
@@ -357,11 +359,8 @@ public class DataLoader : MonoBehaviour
                 }
             }
 
-            // Add a MeshCollider to the LineRenderer
-            AttachBoxColliders(lineObj, rotatedVertices.ToArray());
-
-            lineObj.GetComponent<XRSimpleInteractable>().selectEntered.AddListener(TogglePolyline);
-            Debug.Log(lineObj.GetComponent<XRSimpleInteractable>().selectEntered.ToString());
+            XRSimpleInteractable m_Interactable = lineObj.GetComponent<XRSimpleInteractable>();
+            m_Interactable.firstSelectEntered.AddListener(TogglePolyline);
 
             return lineObj;
         }
@@ -371,12 +370,24 @@ public class DataLoader : MonoBehaviour
             return null;
         }
     }
-    void TogglePolyline(SelectEnterEventArgs arg0)
-    {
-        IXRSelectInteractable selectedObj = arg0.interactableObject;
-        IXRSelectInteractor iXRInteractorObj = arg0.interactorObject;
 
-        Debug.Log("selected");
+    void TogglePolyline(SelectEnterEventArgs args)
+    {
+        // Actually toggle the polyline
+        IXRSelectInteractable component = args.interactableObject;
+        IXRSelectInteractor interactor = args.interactorObject;
+
+        Transform flightlineContainer = component.transform.parent.transform;
+        Debug.Log(flightlineContainer.name);
+
+        foreach (Transform child in flightlineContainer)
+        {
+            if (child.name.StartsWith("Data"))
+            {
+                Debug.Log(child.name);
+                child.gameObject.SetActive(!child.gameObject.activeSelf);
+            }
+        }
     }
 
     private void AttachBoxColliders(GameObject lineObj, Vector3[] vertices)
@@ -389,7 +400,7 @@ public class DataLoader : MonoBehaviour
 
             // Add the collider
             BoxCollider collider = lineObj.AddComponent<BoxCollider>();
-            collider.isTrigger = true;
+            //collider.isTrigger = false;
 
             // Set the collider bounds
             collider.center = (a + b) / 2f;
@@ -399,7 +410,7 @@ public class DataLoader : MonoBehaviour
                 Math.Max(Mathf.Abs(a.z - b.z), 0.2f)
             );
 
-            lineObj.GetComponent<XRSimpleInteractable>().colliders.Add(collider);
+            // lineObj.GetComponent<XRSimpleInteractable>().colliders.Add(collider);
         }
     }
 
