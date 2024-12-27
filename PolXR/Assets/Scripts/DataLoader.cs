@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Events;
 using System;
 using System.Linq;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.UI;
+using UnityEngine.XR.Interaction.Toolkit.Samples.Hands;
 //using Fusion;
 
 
@@ -130,7 +131,15 @@ public class DataLoader : MonoBehaviour
             // Debug.LogError(flightlineDirectory);
         }
 
+        // Set Toggle Functionality
+        SetTogglesForMenus();
+
+        // Set Button Functionality
+        SetButtonsForMenus();
+
         DisableAllRadarObjects(radarContainer);
+
+        DisableMenus();
     }
 
     private void DisableAllRadarObjects(GameObject radarContainer)
@@ -215,6 +224,8 @@ public class DataLoader : MonoBehaviour
                 {
                     // Create LineRenderer for Flightline
                     lineObj = CreateLineRenderer(objFile, segmentContainer);
+                    int RadarGramLayer = LayerMask.NameToLayer("Radargram");
+                    lineObj.layer = RadarGramLayer;
                 }
                 else if (fileName.StartsWith("Data"))
                 {
@@ -245,16 +256,24 @@ public class DataLoader : MonoBehaviour
                         radarObj.transform.SetParent(segmentContainer.transform);
 
                         // Add necessary components to the Radar object
-                        //radarObj.AddComponent<ConstraintManager>();
-                        //radarObj.AddComponent<BoundsControl>();
-                        //radarObj.AddComponent<NearInteractionGrabbable>();
-                        //radarObj.AddComponent<Microsoft.MixedReality.Toolkit.UI.ObjectManipulator>();
-                        //radarObj.AddComponent<RotationAxisConstraint>();
 
-                        // Add necessary components to the parent segment container
-                        //segmentContainer.AddComponent<BoxCollider>();
-                        //segmentContainer.AddComponent<ConstraintManager>();
-                        //segmentContainer.AddComponent<MyRadarEvents>();
+                        // Attach the Box Collider
+                        radarObj.AddComponent<BoxCollider>();
+                        // Attach the Grab Interactable
+                        XRGrabInteractable IradarObj = radarObj.AddComponent<XRGrabInteractable>();
+                        // Add Rotation Constraints for Y Axis Only
+                        IradarObj.movementType = XRBaseInteractable.MovementType.Instantaneous;
+                        IradarObj.trackPosition = true;
+                        IradarObj.trackRotation = false;
+                        IradarObj.throwOnDetach = false;
+                        IradarObj.matchAttachRotation = false;
+
+                        radarObj.GetComponent<Rigidbody>().useGravity = false;
+                        //radarObj.GetComponent<Rigidbody>().freezeRotation = false;
+                        GrabTransformerRotationAxisLock LockObj = radarObj.AddComponent<GrabTransformerRotationAxisLock>(); //Sample Script Changed
+
+                        int RadarGramLayer = LayerMask.NameToLayer("Radargram");
+                        radarObj.layer = RadarGramLayer;
                     }
                 }
             }
@@ -387,7 +406,115 @@ public class DataLoader : MonoBehaviour
                 Debug.Log(child.name);
                 child.gameObject.SetActive(!child.gameObject.activeSelf);
             }
+            else if (child.name.StartsWith("Flightline"))
+            {
+                if (child.gameObject.GetComponent<LineRenderer>().material.color == Color.black)
+                {
+                    child.gameObject.GetComponent<LineRenderer>().material.color = Color.green;
+                }
+                else
+                {
+                    child.gameObject.GetComponent<LineRenderer>().material.color = Color.black;
+                }
+            }
         }
+    }
+
+    void ToggleSurfaceDEM(bool arg0)
+    {
+        GameObject surfaceDEM = GameObject.Find("/Managers/DataLoader/DEM/surface");
+        surfaceDEM.SetActive(!surfaceDEM.activeSelf);
+    }
+
+    void ToggleBaseDEM(bool arg0)
+    {
+        GameObject baseDEM = GameObject.Find("/Managers/DataLoader/DEM/bedrock");
+        baseDEM.SetActive(!baseDEM.activeSelf);
+    }
+
+    void ToggleFlightlines(bool arg0)
+    {
+        // TODO
+    }
+
+    void ToggleRadargram(bool arg0) 
+    { 
+        // TODO
+    }
+
+    void ResetRadargram()
+    {
+        // TODO
+    }
+
+    void OpenHome()
+    {
+        // TODO
+    }
+
+    void GoToRadargram()
+    {
+        // TODO
+    }
+
+    void CloseMainMenu()
+    {
+        GameObject.Find("MainMenu").SetActive(false);
+    }
+
+    void CloseRadarMenu()
+    {
+        GameObject.Find("RadarMenu").SetActive(false);
+    }
+
+    private void SetTogglesForMenus()
+    {
+        Toggle radarMenuRadargramToggle = GameObject.Find("RadarMenu/Toggles/Radargram Toggle").GetComponent<Toggle>();
+        Toggle radarMenuSurfaceDEMToggle = GameObject.Find("RadarMenu/Toggles/Surface DEM Toggle").GetComponent<Toggle>();
+
+        //BoundingBox Not Implemented
+        Toggle mainMenuBoundingBoxToggle = GameObject.Find("MainMenu/Toggles/BoundingBox Toggle").GetComponent<Toggle>();
+
+        Toggle mainMenuFlightlinesToggle = GameObject.Find("MainMenu/Toggles/Flightlines Toggle").GetComponent<Toggle>();
+        Toggle mainMenuSurfaceDEMToggle = GameObject.Find("MainMenu/Toggles/Surface DEM Toggle").GetComponent<Toggle>();
+        Toggle mainMenuBaseDEMToggle = GameObject.Find("MainMenu/Toggles/Base DEM Toggle").GetComponent<Toggle>();
+
+        radarMenuSurfaceDEMToggle.onValueChanged.AddListener(ToggleSurfaceDEM);
+        mainMenuSurfaceDEMToggle.onValueChanged.AddListener(ToggleSurfaceDEM);
+        mainMenuBaseDEMToggle.onValueChanged.AddListener(ToggleBaseDEM);
+
+        radarMenuRadargramToggle.onValueChanged.AddListener(ToggleRadargram);
+        mainMenuFlightlinesToggle.onValueChanged.AddListener(ToggleFlightlines);
+
+    }
+
+    private void SetButtonsForMenus()
+    {
+        Button rmClose = GameObject.Find("RadarMenu/Buttons/ButtonClose").GetComponent<Button>();
+        rmClose.onClick.AddListener(CloseRadarMenu);
+        Button rmReset = GameObject.Find("RadarMenu/Buttons/ButtonReset").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button rmWrite = GameObject.Find("RadarMenu/Buttons/ButtonWrite").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button rmHome = GameObject.Find("RadarMenu/Buttons/ButtonHome").GetComponent<Button>();
+        rmHome.onClick.AddListener(OpenHome);
+        Button rmTeleport = GameObject.Find("RadarMenu/Buttons/ButtonTeleport").GetComponent<Button>();
+        rmTeleport.onClick.AddListener(GoToRadargram);
+        Button rmResetRadar = GameObject.Find("RadarMenu/Buttons/ButtonResetRadar").GetComponent<Button>();
+        rmResetRadar.onClick.AddListener(ResetRadargram);
+        Button rmMeasure = GameObject.Find("RadarMenu/Buttons/ButtonMeasure").GetComponent<Button>(); // NOT IMPLEMENTED
+
+        Button mmWrite = GameObject.Find("MainMenu/Buttons/ButtonWrite").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button mmReset = GameObject.Find("MainMenu/Buttons/ButtonReset").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button mmClose = GameObject.Find("MainMenu/Buttons/ButtonClose").GetComponent<Button>();
+        mmClose.onClick.AddListener(CloseMainMenu);
+        Button mmMiniMap = GameObject.Find("MainMenu/Buttons/ButtonMiniMap").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button mmLoadScene = GameObject.Find("MainMenu/Buttons/ButtonLoadScene").GetComponent<Button>(); // NOT IMPLEMENTED
+        Button mmHomeScreen = GameObject.Find("MainMenu/Buttons/ButtonHomeScreen").GetComponent<Button>(); // NOT IMPLEMENTED
+    }
+
+    void DisableMenus()
+    {
+        GameObject.Find("RadarMenu").SetActive(false);
+        GameObject.Find("MainMenu").SetActive(false);
     }
 
     private void AttachBoxColliders(GameObject lineObj, Vector3[] vertices)
