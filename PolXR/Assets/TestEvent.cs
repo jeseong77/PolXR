@@ -13,10 +13,10 @@ public class TestEvent : MonoBehaviour
     {
         BoxCollider collider = lineObj.AddComponent<BoxCollider>();
 
-        lineObj.AddComponent<XRSimpleInteractable>();
+        lineObj.AddComponent<XRGrabInteractable>();
 
-        XRSimpleInteractable m_Interactable = lineObj.GetComponent<XRSimpleInteractable>();
-        m_Interactable.firstSelectEntered.AddListener(TogglePolyline);
+        XRGrabInteractable m_Interactable = lineObj.GetComponent<XRGrabInteractable>();
+        // m_Interactable.firstSelectEntered.AddListener(TogglePolyline);
     }
 
     void TogglePolyline(SelectEnterEventArgs args)

@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Samples.Hands;
+using UnityEngine.XR.Interaction.Toolkit.Transformers;
 //using Fusion;
 
 
@@ -31,6 +32,9 @@ public class DataLoader : MonoBehaviour
     public List<string> flightlineDirectories;
     private Shader radarShader;
     private GameObject menu;
+
+    private GameObject radarMenu;
+    private GameObject mainMenu;
 
     // public NetworkRunner runner;
 
@@ -91,6 +95,9 @@ public class DataLoader : MonoBehaviour
 
     void Start()
     {
+        radarMenu = GameObject.Find("RadarMenu");
+        mainMenu = GameObject.Find("MainMenu");
+
         radarShader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Shaders/RadarShader.shader");
         if (radarShader == null)
         {
@@ -138,6 +145,7 @@ public class DataLoader : MonoBehaviour
         SetButtonsForMenus();
 
         DisableAllRadarObjects(radarContainer);
+
 
         DisableMenus();
     }
@@ -258,27 +266,93 @@ public class DataLoader : MonoBehaviour
                         // Add necessary components to the Radar object
 
                         // Attach the Box Collider
-                        radarObj.AddComponent<BoxCollider>();
+                        GameObject radarMesh = meshChild.gameObject;
+
+                        //BoxCollider bc = radarMesh.AddComponent<BoxCollider>();
+                        //Vector3 meshExtents = radarMesh.GetComponentInChildren<MeshRenderer>().bounds.extents;
+                        //bc.size = new Vector3(meshExtents.x, meshExtents.y, meshExtents.z);
+                        //Debug.Log(bc.size);
+
+                        MeshCollider bc = radarMesh.AddComponent<MeshCollider>();
+                        bc.convex = true;
+
                         // Attach the Grab Interactable
-                        XRGrabInteractable IradarObj = radarObj.AddComponent<XRGrabInteractable>();
+                        XRGrabInteractable IradarObj = radarMesh.AddComponent<XRGrabInteractable>();
+                        IradarObj.interactionLayers = InteractionLayerMask.NameToLayer("Radargram");
                         // Add Rotation Constraints for Y Axis Only
                         IradarObj.movementType = XRBaseInteractable.MovementType.Instantaneous;
-                        IradarObj.trackPosition = true;
-                        IradarObj.trackRotation = false;
+                        //IradarObj.trackPosition = true;
+                        //IradarObj.trackRotation = false;
+                        // IradarObj.trackScale = false;
                         IradarObj.throwOnDetach = false;
-                        IradarObj.matchAttachRotation = false;
+                        //IradarObj.matchAttachRotation = false;
+                        IradarObj.useDynamicAttach = true;
 
-                        radarObj.GetComponent<Rigidbody>().useGravity = false;
-                        //radarObj.GetComponent<Rigidbody>().freezeRotation = false;
-                        GrabTransformerRotationAxisLock LockObj = radarObj.AddComponent<GrabTransformerRotationAxisLock>(); //Sample Script Changed
+                        radarMesh.GetComponent<Rigidbody>().useGravity = false;
+                        radarMesh.GetComponent<Rigidbody>().isKinematic = false;
+                        // radarObj.GetComponent<Rigidbody>().freezeRotation = false;
+
+                        // LockObj.canProcess = true;
+
+                        IradarObj.firstSelectEntered.AddListener(ConvertRadargramToWorld);
+                        IradarObj.lastSelectExited.AddListener(ResetRadargram);
+
+                        //XRGeneralGrabTransformer IradarGrabTransformer = radarMesh.AddComponent<XRGeneralGrabTransformer>();
+                        //GrabTransformerRotationAxisLock LockObj = radarMesh.AddComponent<GrabTransformerRotationAxisLock>(); //Sample Script Changed
+
 
                         int RadarGramLayer = LayerMask.NameToLayer("Radargram");
-                        radarObj.layer = RadarGramLayer;
+                        radarMesh.layer = RadarGramLayer;
                     }
                 }
             }
         }
     }
+
+    void ConvertRadargramToWorld(SelectEnterEventArgs args)
+    {
+        // Actually toggle the polyline
+        IXRSelectInteractable component = args.interactableObject;
+        IXRSelectInteractor interactor = args.interactorObject;
+
+        Transform meshTransform = component.transform;
+        Debug.Log(meshTransform.name);
+
+    }
+
+    // Need to reset Radargram interactable back to position 0,0,0, rotation 0,0,0, scale 1,1,1
+    void ResetRadargram(SelectExitEventArgs args)
+    {
+        // Actually toggle the polyline
+        IXRSelectInteractable component = args.interactableObject;
+        IXRSelectInteractor interactor = args.interactorObject;
+
+        Transform radargramMesh = component.transform;
+        Debug.Log(radargramMesh.name);
+        Debug.Log(radargramMesh.transform);
+
+        radargramMesh.localPosition = new Vector3(radargramMesh.localPosition.x / 10000, 
+            radargramMesh.localPosition.y / 10000, radargramMesh.position.z / 1000);
+        radargramMesh.localEulerAngles = new Vector3(0, 0, 0); // TODO: Does not account for rotation properly
+        // radargramMesh.localRotation = Quaternion.identity;
+        // radargramMesh.localPosition = new Vector3(0, 0, 0);
+        radargramMesh.localScale = Vector3.one; // TODO : Needs to be changed if radargram is scaled
+    }
+
+    void OpenRadarMenu(SelectExitEventArgs args)
+    {
+        // Actually toggle the polyline
+        IXRSelectInteractable component = args.interactableObject;
+        IXRSelectInteractor interactor = args.interactorObject;
+
+        Transform radargramMesh = component.transform;
+        Debug.Log(radargramMesh.name);
+        Debug.Log(radargramMesh.transform);
+
+        mainMenu.SetActive(false);
+        radarMenu.SetActive(true);
+    }
+
 
     // CTL Networking
     private GameObject LoadObj(string objPath)
@@ -405,16 +479,24 @@ public class DataLoader : MonoBehaviour
             {
                 Debug.Log(child.name);
                 child.gameObject.SetActive(!child.gameObject.activeSelf);
+
+                Transform meshChild = child.transform.Find("mesh");
+                
+                meshChild.localRotation = Quaternion.identity;
+                meshChild.localPosition = new Vector3(0, 0, 0);
+                meshChild.localScale = Vector3.one;
             }
             else if (child.name.StartsWith("Flightline"))
             {
                 if (child.gameObject.GetComponent<LineRenderer>().material.color == Color.black)
                 {
                     child.gameObject.GetComponent<LineRenderer>().material.color = Color.green;
+                    radarMenu.SetActive(true);
                 }
                 else
                 {
                     child.gameObject.GetComponent<LineRenderer>().material.color = Color.black;
+                    radarMenu.SetActive(false);
                 }
             }
         }
@@ -434,7 +516,18 @@ public class DataLoader : MonoBehaviour
 
     void ToggleFlightlines(bool arg0)
     {
-        // TODO
+        Transform radar = GameObject.Find("Managers/DataLoader/Radar").transform;
+
+        foreach (Transform child in radar)
+        {
+            foreach (Transform child2 in child)
+            {
+                if (child2.name.StartsWith("Flightline"))
+                {
+                    child2.gameObject.SetActive(arg0);
+                }
+            }
+        }
     }
 
     void ToggleRadargram(bool arg0) 
@@ -449,7 +542,8 @@ public class DataLoader : MonoBehaviour
 
     void OpenHome()
     {
-        // TODO
+        mainMenu.SetActive(true);
+        radarMenu.SetActive(false);
     }
 
     void GoToRadargram()
@@ -459,12 +553,12 @@ public class DataLoader : MonoBehaviour
 
     void CloseMainMenu()
     {
-        GameObject.Find("MainMenu").SetActive(false);
+        mainMenu.SetActive(false);
     }
 
     void CloseRadarMenu()
     {
-        GameObject.Find("RadarMenu").SetActive(false);
+        radarMenu.SetActive(false);
     }
 
     private void SetTogglesForMenus()
@@ -513,8 +607,8 @@ public class DataLoader : MonoBehaviour
 
     void DisableMenus()
     {
-        GameObject.Find("RadarMenu").SetActive(false);
-        GameObject.Find("MainMenu").SetActive(false);
+        radarMenu.SetActive(false);
+        mainMenu.SetActive(false);
     }
 
     private void AttachBoxColliders(GameObject lineObj, Vector3[] vertices)
