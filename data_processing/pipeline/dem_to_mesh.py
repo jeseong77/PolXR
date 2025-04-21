@@ -25,31 +25,24 @@ def dem_to_mesh(dem_name: str, filename: str, depth: int):
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    
-    # Load the DEM data
-    df = pd.read_table(input_path, sep='\s+', names=['x', 'y', 'z'])
-    for c in df.columns:
-        df[c] = df[c].astype(float)
+       
+    # Load XYZ Pointcloud
+    pcd = o3d.io.read_point_cloud(input_path,format='xyz')
 
-    # Create point cloud
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(df.to_numpy())
-    del df
-
-    # Estimate normals
+    # Estimate normals for the point cloud
     pcd.estimate_normals()
 
-    # Create mesh
+    # Create mesh with poisson surface correction
     mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
         pcd, depth=depth
     )
 
-    # Remove low-density vertices
-    vertices_to_remove = densities < np.quantile(densities, 0.04)
-    mesh.remove_vertices_by_mask(vertices_to_remove)
+    # Removing edge warping
+    bbox = pcd.get_axis_aligned_bounding_box()
+    cropped_mesh = mesh.crop(bbox)
 
     # Save mesh as OBJ
-    o3d.io.write_triangle_mesh(output_path, mesh)
+    o3d.io.write_triangle_mesh(output_path, cropped_mesh)
 
     # Calculate centroid
     vertices = np.asarray(mesh.vertices)
