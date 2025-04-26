@@ -103,12 +103,12 @@ The .obj files then need to be decimated in order to improve performance. This i
 <br />
 
 <details>
-<summary><strong>Click to view Scene Workflows</strong></summary>
+<summary><strong>Scene Workflows</strong></summary>
 
 <br />
 
 <details>
-<summary><strong>Click to view RIS Scene Workflow</strong></summary>
+<summary><strong>RIS Scene Workflow</strong></summary>
 
 ---
 ### Ross Ice Shelf (RIS) Workflow
@@ -137,7 +137,7 @@ The .obj files then need to be decimated in order to improve performance. This i
 </details>
 
 <details>
-<summary><strong>Click to view Petermann Scene Workflow</strong></summary>
+<summary><strong>Petermann Scene Workflow</strong></summary>
 
 ---
 ### Petermann Glacier (PG) Workflow
