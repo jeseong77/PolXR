@@ -67,7 +67,7 @@ The RIS scene uses the following assets.
 
 In this scene, radar images are textured on planar GameObjects. Only plots from the portions of the flightline where the plane was flying relatively straight are shown. This scene has the most mature navigation system and includes a minimap.
 
-The flightlines are loaded from CSV files as discrete points.
+The flightlines are loaded from CSV files as discrete points (`CSVReadPlot.cs`).
 
 <img src="https://github.com/qaziashikin/polAR/blob/Summer/images/ris_sceneMenu.png?raw=true"      alt="RIS Scene Menu"      style="float: left; margin-right: 10px;" />
 <br />
@@ -98,7 +98,7 @@ The radargram objects are generated in the following way. In preprocessing, the 
 * .mtl (the material file for the mesh)
 * .png (the radargram; this is mapped onto the mesh)
 
-The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder (likely under `Assets/AppData`). Upon loading the scene, the **DataLoader.cs** script programmatically loads these data files (DEMs, flightlines, radargrams) and generates the corresponding GameObjects in the Unity scene. Users can select a flightline portion to toggle the visibility of the associated radargram mesh.
+The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder (likely under `Assets/AppData`). Upon loading the scene, the **DataLoader.cs** script programmatically loads these data files (DEMs, flightlines, radargrams) and generates the corresponding GameObjects in the Unity scene. *(Note: The original table below mentions LoadFlightlines.cs, which appears to be outdated/unused based on code analysis; DataLoader.cs seems to handle this functionality now).* Users can select a flightline portion to toggle the visibility of the associated radargram mesh.
 
 <br />
 
@@ -228,7 +228,7 @@ This section describes the typical data and script execution flow for each main 
 | **LinePicking/UVHelpers.cs** | Utility script containing core logic for line picking: calculates UV coordinates from hits, finds line paths based on texture data, converts UV to 3D world coordinates. Relies on `GeometryUtils` and `TextureUtils`.      | Petermann (likely) |
 | **LinePicking/TextureUtils.cs** | Utility functions for texture manipulation used in line picking: reflecting textures, saving debug textures, getting pixel brightness.                                                                                | Petermann (likely) |
 | **LinePicking/GeometryUtils.cs** | Provides geometric helper functions (triangle area, closest point on triangle, barycentric coordinates) used by `UVHelpers`.                                                                                           | Petermann (likely) |
-| *LoadFlightLines (Unused)* | *Previously generated radargram meshes from obj/mtl files. Appears superseded by `DataLoader.cs` and is located in the 'Unused' folder.* | *Obsolete* |
+| *LoadFlightLines (Unused)* | *Originally listed as generating radargram meshes. Appears superseded by `DataLoader.cs` and is located in the 'Unused' folder.* | *Obsolete* |
 
 </details>
 
