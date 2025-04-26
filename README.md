@@ -48,7 +48,7 @@ The application contains three scenes.
 * Ross Ice Shelf (RIS)
 * Petermann Glacier (PG or Petermann)
 
-The Home Menu scene is mostly empty except for an XR menu that allows users to load one of the other scenes (`HomeMenuEvents.cs`).
+The Home Menu scene is mostly empty except for an XR menu that allows users to load one of the other scenes.
 <img src="https://github.com/qaziashikin/polAR/blob/Summer/images/homeMenu.png?raw=true"      alt="Home Menu"      style="float: left; margin-right: 10px;" />
 <br />
 
