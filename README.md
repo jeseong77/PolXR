@@ -105,11 +105,12 @@ The .obj files then need to be decimated in order to improve performance. This i
 <details>
 <summary><strong>Click to view Scene Workflows</strong></summary>
 
+<br />
+
+<details>
+<summary><strong>Click to view RIS Scene Workflow</strong></summary>
+
 ---
-## Scene Workflows
-
-This section describes the typical data and script execution flow for each main scene.
-
 ### Ross Ice Shelf (RIS) Workflow
 
 1.  **Scene Load:** User selects the RIS scene from the Home Menu.
@@ -132,6 +133,13 @@ This section describes the typical data and script execution flow for each main 
     * **Navigation:** User moves via joystick teleportation or uses the Minimap (`MinimapControl.cs`) for larger jumps.
     * **Toggles:** Main Menu allows toggling visibility of all radar images, all CSV picks, DEMs, etc. (handled by UI elements calling methods in `CSVReadPlot` or potentially `MenuEvents`).
 
+---
+</details>
+
+<details>
+<summary><strong>Click to view Petermann Scene Workflow</strong></summary>
+
+---
 ### Petermann Glacier (PG) Workflow
 
 1.  **Scene Load:** User selects the Petermann scene from the Home Menu.
@@ -166,8 +174,6 @@ This section describes the typical data and script execution flow for each main 
 
 ---
 </details>
-
-<br />
 
 ### Code files
 
