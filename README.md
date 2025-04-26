@@ -175,6 +175,11 @@ The .obj files then need to be decimated in order to improve performance. This i
 ---
 </details>
 
+---
+</details>
+
+<br />
+
 ### Code files
 
 | Filename | Description | Scenes |
@@ -301,59 +306,4 @@ The line menu has a unique sidebar.
 | Sidebar "X" | Closes the menu |
 | Sidebar "Home" | Opens the main menu |
 | Sidebar "Refresh" | Resets the radar line, or snap two radar images under measure mode |
-| Sidebar "Pin" | Saves the radar information to .txt file |
-| Sidebar ">" | Teleports to the location of the radar line in the scene |
-
-
-<br />
-
-### Petermann Scene Controls
-
-<img src="https://github.com/qaziashikin/polAR/blob/Summer/images/petermann_radarMenu.png?raw=true"      alt="Petermann Radar Menu"      style="float: left; margin-right: 10px;" />
-<br />
-
-| Main Menu Interaction Title | Description |
-| :-----------: | ----------- |
-| Scene Vertical Scaling | Scales everything in the scene along the vertical (Y) axis |
-| Radargrams | Checking this button turns all the radargram meshes on/off |
-| Bounding Box | Toggles the bounding box around the scene |
-| Flightlines | Checking this button turns the flight lines that are currently loaded on/off |
-| Surface DEM | Checking this button turns the Surface DEM on/off |
-| Base DEM | Checking this button turns the Base DEM on/off |
-
-Here is a list of interactions available with the radar menu. These are all specific to the 3D workflow.
-| Radar Menu Interaction Title | Description |
-| :-----------: | ----------- |
-| Rotation | Rotates the radar mesh by the seleced amount of degrees from its initial orientation |
-| Exaggeration Along Axes | Stretches or shrinks the radar image (the exaggeration is dynamic and can be repeated limitlessly); the sliders are in the order Y (vertical), X, Z |
-| Transparency | Makes the radar image transparent by the selected percent; currently non-functional |
-| Radargram Mesh | Checking this box turns the radargram mesh on/off |
-| Surface DEM | Checking this button turns the Surface DEM on/off |
-
-The radar menu has a unique sidebar.
-| Radar Menu Title | Description |
-| :-----------: | ----------- |
-| Measurement Mode | Turns measurent mode on/off (allows user to place two marks on the same image and measure the distance between); currently non-functional |
-| Sidebar "X" | Closes the menu |
-| Sidebar "Home" | Opens the main menu |
-| Sidebar "Refresh" | Resets the radargram to its initial location |
-| Sidebar "Pin" | Saves the radar information to .txt file; currently non-functional |
-| Sidebar ">" | Teleports to the location of the radar mesh centroid in the scene |
-
-<br />
-
-### Voice Commands
-
-The voice commands can be used at any time and do not need to be toggled. Simply say the word clearly and VISER will process the command.
-
-| Voice Command | Description |
-| :-----------: | ----------- |
-| "Menu" | Open/close the menu |
-| "Model" | Turn on/off the DEM models |
-| "Image" | Turn on/off the image for the selected radar line |
-| "Line" | Turn on/off the CSV picks for the selected radar line |
-| "Go" | Teleport to the image location for the selected radar line |
-| "Mark" | Add a point to the image for the selected radar line |
-| "Reset" | Reset the radar lines for the whole scene |
-| "Measure" | Turn on/off measurement mode |
-| "Box" | Turn on/off the bounding box for the entire scene |
+| Sidebar "Pin" | Saves
