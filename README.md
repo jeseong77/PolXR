@@ -67,7 +67,7 @@ The RIS scene uses the following assets.
 
 In this scene, radar images are textured on planar GameObjects. Only plots from the portions of the flightline where the plane was flying relatively straight are shown. This scene has the most mature navigation system and includes a minimap.
 
-The flightlines are loaded from CSV files as discrete points (`CSVReadPlot.cs`).
+The flightlines are loaded from CSV files as discrete points.
 
 <img src="https://github.com/qaziashikin/polAR/blob/Summer/images/ris_sceneMenu.png?raw=true"      alt="RIS Scene Menu"      style="float: left; margin-right: 10px;" />
 <br />
@@ -98,7 +98,7 @@ The radargram objects are generated in the following way. In preprocessing, the 
 * .mtl (the material file for the mesh)
 * .png (the radargram; this is mapped onto the mesh)
 
-The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder (likely under `Assets/AppData`). Upon loading the scene, the **DataLoader.cs** script programmatically loads these data files (DEMs, flightlines, radargrams) and generates the corresponding GameObjects in the Unity scene. *(Note: The original table below mentions LoadFlightlines.cs, which appears to be outdated/unused based on code analysis; DataLoader.cs seems to handle this functionality now).* Users can select a flightline portion to toggle the visibility of the associated radargram mesh.
+The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder. Upon loading the scene, the _LoadFlightlines.cs_ script programmatically generates meshes from the file triples and associates each textured mesh with the corresponding flightline polyline. Users can select a flightline portion to load a mesh.
 
 <br />
 
