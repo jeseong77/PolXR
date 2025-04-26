@@ -48,7 +48,7 @@ The application contains three scenes.
 * Ross Ice Shelf (RIS)
 * Petermann Glacier (PG or Petermann)
 
-The Home Menu scene is mostly empty except for an XR menu that allows users to load one of the other scenes.
+The Home Menu scene is mostly empty except for an XR menu that allows users to load one of the other scenes (`HomeMenuEvents.cs`).
 <img src="https://github.com/qaziashikin/polAR/blob/Summer/images/homeMenu.png?raw=true"      alt="Home Menu"      style="float: left; margin-right: 10px;" />
 <br />
 
@@ -100,7 +100,96 @@ The radargram objects are generated in the following way. In preprocessing, the 
 
 The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder (likely under `Assets/AppData`). Upon loading the scene, the **DataLoader.cs** script programmatically loads these data files (DEMs, flightlines, radargrams) and generates the corresponding GameObjects in the Unity scene. Users can select a flightline portion to toggle the visibility of the associated radargram mesh.
 
+<br />
+
+<details>
+<summary><strong>Click to view Scene Workflows</strong></summary>
+
+---
+## Scene Workflows
+
+This section describes the typical data and script execution flow for each main scene.
+
+### Ross Ice Shelf (RIS) Workflow
+
+1.  **Scene Load:** User selects the RIS scene from the Home Menu.
+2.  **Data Loading (`CSVReadPlot.cs`):**
+    * Reads flightline data from CSV files located in `Resources/SplitByLine...`.
+    * Creates `ParticleSystem` GameObjects to represent the flightline points.
+    * Loads DEM models (`Bedmap2_surface_RIS`, `Bedmap2_bed`) from `Resources/Prefabs`.
+    * Reads radar image position/scale data from `Resources/RadarInfoPosScale.csv`.
+    * Instantiates planar GameObjects (`RadarImagePlane` prefab) for each radar image at the specified positions/scales. Initially, these might have a default white texture.
+3.  **Scene Setup (`CSVReadPlot.cs`, `DrawGrid.cs`):**
+    * Associates the `ParticleSystem` flightlines with the corresponding planar radar GameObjects via `RadarEvents2D.SetLine()`.
+    * Instantiates and configures DEM GameObjects.
+    * `DrawGrid.cs` generates the background graticule.
+    * Minimap elements are initialized (`MinimapControl.cs`).
+4.  **User Interaction:**
+    * User interacts with the scene using VR controllers.
+    * **Selection:** Selecting a radar plane (`GameObject` with `RadarEvents2D.cs`) triggers texture loading (`RadarEvents2D.loadImage()`) for that specific radargram and synchronizes the Radar Menu (`RadarEvents.SychronizeMenu()`).
+    * **Manipulation:** User can manipulate the radar plane (scale, rotate) via the Radar Menu (interactions likely handled by the now mostly commented-out `MenuEvents.cs` or potentially UI elements directly calling `RadarEvents2D` methods).
+    * **Measurement:** Toggling Measurement Mode allows placing `MarkObj` and `MeasureObj` (`RadarEvents2D.OnPointerDown`), with `UpdateLine.cs` drawing the line between them.
+    * **Navigation:** User moves via joystick teleportation or uses the Minimap (`MinimapControl.cs`) for larger jumps.
+    * **Toggles:** Main Menu allows toggling visibility of all radar images, all CSV picks, DEMs, etc. (handled by UI elements calling methods in `CSVReadPlot` or potentially `MenuEvents`).
+
+### Petermann Glacier (PG) Workflow
+
+1.  **Scene Load:** User selects the Petermann scene from the Home Menu.
+2.  **Data Loading (`DataLoader.cs`):**
+    * Reads DEM `.obj` files from the directory specified in the editor (`Assets/AppData/DEMs/...`).
+    * Reads Flightline `.obj` files from specified directories (`Assets/AppData/Flightlines/...`).
+    * Reads Radargram `.obj` (mesh) and `.png` (texture) files from specified directories (`Assets/AppData/Flightlines/...`).
+3.  **Scene Setup (`DataLoader.cs`, `DrawGrid.cs`):**
+    * Instantiates DEM GameObjects from loaded `.obj` files.
+    * Instantiates Flightline GameObjects for each segment:
+        * Creates `LineRenderer` components from `.obj` vertices.
+        * Attaches `BoxCollider`s and `XRSimpleInteractable` components.
+        * Attaches `FlightlineInfo.cs` to store metadata (e.g., `isBackwards`).
+    * Instantiates Radargram GameObjects for each segment:
+        * Applies the loaded `.obj` mesh and `.png` texture (using `RadarShader.shader`).
+        * Adds `MeshCollider` and `XRGrabInteractable` components for interaction.
+        * Scales and rotates objects appropriately.
+        * Radargram meshes are typically set to inactive initially.
+    * `DrawGrid.cs` generates the background graticule.
+    * Sets up UI listeners for toggles and buttons on MainMenu and RadarMenu canvases.
+4.  **User Interaction:**
+    * User interacts with the scene using VR controllers.
+    * **Selection:** Selecting a Flightline segment (via `XRSimpleInteractable`) triggers a listener (configured in `DataLoader.cs`) that likely calls `RadarEvents3D.ToggleRadar()` on the corresponding Radargram object, making the mesh visible/invisible. Selecting the Flightline might also change its color and open the Radar Menu.
+    * **Manipulation:** Grabbing a visible Radargram mesh (via `XRGrabInteractable`) allows the user to move and rotate it. `RadarEvents3D` manages state synchronization (e.g., with the Radar Menu).
+    * **Line Picking:**
+        * User enables Line Picking mode (e.g., via a button handled by `ToggleLinePickingMode.cs`).
+        * User points at a radargram mesh and presses the trigger.
+        * `PickLine.cs` detects the interaction, uses `UVHelpers.cs` to calculate the hit UV coordinate and then trace a path along the brightest pixels (or based on gradient) on the texture.
+        * `PickLine.cs` draws the traced path using a `LineRenderer`.
+        * Picked line data (pixel coordinates and world coordinates) can be saved via `RadarEvents3D.saveRadargram()`.
+    * **UI Interaction:** Using toggles/buttons on the MainMenu or RadarMenu triggers listeners set up by `DataLoader.cs` to perform actions like toggling DEM visibility, toggling all flightlines, opening/closing menus, resetting radargram transforms (`RadarEvents3D.ResetTransform`), etc.
+
+---
+</details>
+
+<br />
+
 ### Code files
+
+| Filename | Description | Scenes |
+| :-----------: | ----------- | ----------- |
+| HomeMenuEvents | Handles events in the Home Menu scene | Home |
+| CSVReadPlot | Reads flightlines from CSV files into the scene | RIS |
+| HoverLabel | Manages on-the-fly radar image tickmarks | RIS |
+| MinimapControl | Controls the minimap | RIS |
+| UpdateLine | Redraws the line between the Mark and Measure objects | RIS |
+| RadarEvents2D | Handles events specific to the (2D) radargram planes | RIS |
+| LoadFlightLines | Generates radargram meshes from obj/mtl files | Petermann |
+| Measurement | Calculates distances used in Measurement Mode | Petermann |
+| RadarEvents3D | Handles events specific to the (3D) radargram meshes | Petermann |
+| DrawGrid | Generates a graticule grid in the scene | RIS, Petermann |
+| DynamicLabel | Manages on-the-fly radar menu updates | RIS, Petermann |
+| MarkObj | Handles events associated with the mark (cursor) object | RIS, Petermann |
+| MenuEvents | Handles generic events associated with menus | RIS, Petermann |
+| RadarEvents | Handles events associated with radargrams that are the same in both scenes | RIS, Petermann |
+
+<details>
+<summary><strong>Click here for Detailed Script Descriptions & Additional Scripts</strong></summary>
 
 *(Note: This table includes scripts found in the 'Scripts' folder, including some not originally listed, and provides more detail. Descriptions may reflect current functionality observed in code over original intent where applicable.)*
 
@@ -140,6 +229,8 @@ The .obj files then need to be decimated in order to improve performance. This i
 | **LinePicking/TextureUtils.cs** | Utility functions for texture manipulation used in line picking: reflecting textures, saving debug textures, getting pixel brightness.                                                                                | Petermann (likely) |
 | **LinePicking/GeometryUtils.cs** | Provides geometric helper functions (triangle area, closest point on triangle, barycentric coordinates) used by `UVHelpers`.                                                                                           | Petermann (likely) |
 | *LoadFlightLines (Unused)* | *Previously generated radargram meshes from obj/mtl files. Appears superseded by `DataLoader.cs` and is located in the 'Unused' folder.* | *Obsolete* |
+
+</details>
 
 <br />
 
