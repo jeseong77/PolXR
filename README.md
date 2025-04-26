@@ -133,7 +133,6 @@ The .obj files then need to be decimated in order to improve performance. This i
     * **Navigation:** User moves via joystick teleportation or uses the Minimap (`MinimapControl.cs`) for larger jumps.
     * **Toggles:** Main Menu allows toggling visibility of all radar images, all CSV picks, DEMs, etc. (handled by UI elements calling methods in `CSVReadPlot` or potentially `MenuEvents`).
 
----
 </details>
 
 <details>
@@ -172,7 +171,6 @@ The .obj files then need to be decimated in order to improve performance. This i
         * Picked line data (pixel coordinates and world coordinates) can be saved via `RadarEvents3D.saveRadargram()`.
     * **UI Interaction:** Using toggles/buttons on the MainMenu or RadarMenu triggers listeners set up by `DataLoader.cs` to perform actions like toggling DEM visibility, toggling all flightlines, opening/closing menus, resetting radargram transforms (`RadarEvents3D.ResetTransform`), etc.
 
----
 </details>
 
 ---
