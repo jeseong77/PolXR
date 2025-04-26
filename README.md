@@ -110,7 +110,6 @@ The .obj files then need to be decimated in order to improve performance. This i
 <details>
 <summary><strong>RIS Scene Workflow</strong></summary>
 
----
 ### Ross Ice Shelf (RIS) Workflow
 
 1.  **Scene Load:** User selects the RIS scene from the Home Menu.
@@ -138,7 +137,6 @@ The .obj files then need to be decimated in order to improve performance. This i
 <details>
 <summary><strong>Petermann Scene Workflow</strong></summary>
 
----
 ### Petermann Glacier (PG) Workflow
 
 1.  **Scene Load:** User selects the Petermann scene from the Home Menu.
@@ -173,7 +171,6 @@ The .obj files then need to be decimated in order to improve performance. This i
 
 </details>
 
----
 </details>
 
 <br />
@@ -198,9 +195,7 @@ The .obj files then need to be decimated in order to improve performance. This i
 | RadarEvents | Handles events associated with radargrams that are the same in both scenes | RIS, Petermann |
 
 <details>
-<summary><strong>Click here for Detailed Script Descriptions & Additional Scripts</strong></summary>
-
-*(Note: This table includes scripts found in the 'Scripts' folder, including some not originally listed, and provides more detail. Descriptions may reflect current functionality observed in code over original intent where applicable.)*
+<summary><strong>Detailed Script Descriptions & Additional Scripts</strong></summary>
 
 | Filename             | Description                                                                                                                                                                                                                       | Scenes             |
 | :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------- |
