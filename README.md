@@ -98,26 +98,48 @@ The radargram objects are generated in the following way. In preprocessing, the 
 * .mtl (the material file for the mesh)
 * .png (the radargram; this is mapped onto the mesh)
 
-The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder. Upon loading the scene, the _LoadFlightlines.cs_ script programmatically generates meshes from the file triples and associates each textured mesh with the corresponding flightline polyline. Users can select a flightline portion to load a mesh.
+The .obj files then need to be decimated in order to improve performance. This is done in Blender and currently requires manual attention to ensure that the meshes do not deform significantly at the boundaries. These simplified .obj files, along with the .mtl and .png files, are added to the Assets folder (likely under `Assets/AppData`). Upon loading the scene, the **DataLoader.cs** script programmatically loads these data files (DEMs, flightlines, radargrams) and generates the corresponding GameObjects in the Unity scene. Users can select a flightline portion to toggle the visibility of the associated radargram mesh.
 
 ### Code files
 
-| Filename | Description | Scenes |
-| :-----------: | ----------- | ----------- |
-| HomeMenuEvents | Handles events in the Home Menu scene | Home |
-| CSVReadPlot | Reads flightlines from CSV files into the scene | RIS |
-| HoverLabel | Manages on-the-fly radar image tickmarks | RIS |
-| MinimapControl | Controls the minimap | RIS |
-| UpdateLine | Redraws the line between the Mark and Measure objects | RIS |
-| RadarEvents2D | Handles events specific to the (2D) radargram planes | RIS |
-| LoadFlightLines | Generates radargram meshes from obj/mtl files | Petermann |
-| Measurement | Calculates distances used in Measurement Mode | Petermann |
-| RadarEvents3D | Handles events specific to the (3D) radargram meshes | Petermann |
-| DrawGrid | Generates a graticule grid in the scene | RIS, Petermann |
-| DynamicLabel | Manages on-the-fly radar menu updates | RIS, Petermann |
-| MarkObj | Handles events associated with the mark (cursor) object | RIS, Petermann |
-| MenuEvents | Handles generic events associated with menus | RIS, Petermann |
-| RadarEvents | Handles events associated with radargrams that are the same in both scenes | RIS, Petermann |
+*(Note: This table includes scripts found in the 'Scripts' folder, including some not originally listed, and provides more detail. Descriptions may reflect current functionality observed in code over original intent where applicable.)*
+
+| Filename             | Description                                                                                                                                                                                                                       | Scenes             |
+| :------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------- |
+| **DataLoader.cs** | Loads DEM and Flightline data (.obj, .png) from specified directories at runtime. Creates GameObjects, applies textures/materials, adds interaction components (`XRGrabInteractable`), and configures UI events for menus.                  | Petermann          |
+| **DataLoaderEditor.cs**| Custom Unity Editor script to provide a more user-friendly interface (dropdowns) for selecting DEM and Flightline data directories in the Inspector for `DataLoader.cs`.                                                            | Editor Only        |
+| HomeMenuEvents       | Handles scene loading events triggered by buttons in the Home Menu scene.                                                                                                                                                           | Home               |
+| CSVReadPlot          | Reads flightlines from CSV files and plots them as `ParticleSystem`. Loads planar radar images and DEMs from `Resources`. Used in the RIS scene workflow.                                                                             | RIS                |
+| HoverLabel           | Manages the display of temporary labels (tickmarks) when hovering over radar images.                                                                                                                                              | RIS                |
+| MinimapControl       | Controls the minimap display, camera position/view, and user position marker. Handles teleportation via minimap interaction (though interaction code might be currently commented out).                                             | RIS                |
+| UpdateLine           | Redraws the `LineRenderer` connecting the `MarkObj` and `MeasureObj` GameObjects when in Measurement Mode.                                                                                                                       | RIS                |
+| RadarEvents          | Base class providing common properties and methods for radar objects (2D and 3D), such as getting scale, setting alpha, and synchronizing with the menu.                                                                           | RIS, Petermann     |
+| RadarEvents2D        | Inherits from `RadarEvents`. Handles events specific to the 2D planar radargrams in the RIS scene, including texture loading, toggling visibility, managing associated CSV line (`ParticleSystem`), and handling measurement interactions. | RIS                |
+| RadarEvents3D        | Inherits from `RadarEvents`. Handles events specific to the 3D radargram meshes in the Petermann scene, including toggling mesh/flightline visibility, selection handling, transformations, line picking data processing/saving.         | Petermann          |
+| Measurement          | Calculates distances between `MarkObj` and `MeasureObj` for Measurement Mode. Contains logic related to coordinate systems (EPSG). Some functionality might be commented out.                                                   | Petermann (primarily) |
+| DrawGrid             | Generates a graticule grid in the scene using `LineRenderer` based on specified parameters.                                                                                                                                      | RIS, Petermann     |
+| DynamicLabel         | Manages dynamic updates for labels, often used for axis tickmark labels associated with `MarkObj`, adjusting position and text based on parent scale.                                                                            | RIS, Petermann     |
+| MarkObj              | Handles the behavior and appearance of the 2D mark/cursor object, including its visual representation (circle, axes) and axis labels (`DynamicLabel`).                                                                             | RIS, Petermann     |
+| MarkObj3D            | Handles the behavior and appearance of the 3D mark/cursor object used with 3D radargram meshes. Manages visual elements like the circle renderer.                                                                                 | Petermann          |
+| MenuEvents           | Intended to handle generic menu events (sliders, toggles, buttons). *Note: Most functionality appears commented out in the current code; `DataLoader.cs` seems to handle many UI setup tasks now.* | RIS, Petermann     |
+| CameraController     | Sets the initial position of the main camera based on the DEM's centroid calculated by `DataLoader`.                                                                                                                              | Petermann (likely) |
+| ConsoleToGUI         | Utility script for displaying Unity console log messages onto a UI Text element for debugging purposes.                                                                                                                             | Debug/Utility      |
+| Events               | Contains simple methods for closing the MainMenu and RadarMenu GameObjects.                                                                                                                                                        | Utility            |
+| FlightlineInfo       | Simple component attached to Flightline objects to store metadata, specifically whether the flightline data runs backward (`isBackwards`). Used by `UVHelpers`.                                                                    | Petermann          |
+| MinimapFollowUser    | Makes the user's position marker on the minimap follow the main camera's position and adds a blinking effect.                                                                                                                     | RIS                |
+| Mode                 | Defines an enum (`Snap`, `Free`) likely intended for different object manipulation modes (currently seems unused).                                                                                                                | Utility            |
+| PalmUpDetection      | Detects if the user's palm is facing upwards (based on wrist transform) to potentially show/hide a menu canvas.                                                                                                                  | Utility            |
+| PreserveRadargrams   | Singleton script to persist selected radargram GameObjects between scene loads (e.g., from Petermann to a dedicated 'Study' scene).                                                                                                | Utility            |
+| RadialMenu           | Part of a radial menu system, likely handling the main menu logic, selection state, and cursor position based on input (`touchPosition`).                                                                                        | Utility            |
+| RadialSelection      | Represents a single selectable item in the `RadialMenu`, holding an icon and an event to trigger on selection.                                                                                                                    | Utility            |
+| SnapRadargramManager | Manages the selection of radargrams (up to 6) for a 'Study Scene'. Converts 3D radargram textures to UI Sprites for display in a scrollable list and handles loading the 'StudyScene'.                                              | Petermann          |
+| StudySceneManager    | Runs in the 'StudyScene' to retrieve and display the radargrams persisted by `PreserveRadargrams`.                                                                                                                                 | StudyScene         |
+| **LinePicking/PickLine.cs** | Core script for the line picking feature. Detects user input on radargram meshes, initiates the picking process using `UVHelpers`, and draws the resulting line.                                                              | Petermann (likely) |
+| **LinePicking/ToggleLinePickingMode.cs** | Enables/disables the line picking mode based on user input and adjusts controller ray visuals accordingly.                                                                                                   | Petermann (likely) |
+| **LinePicking/UVHelpers.cs** | Utility script containing core logic for line picking: calculates UV coordinates from hits, finds line paths based on texture data, converts UV to 3D world coordinates. Relies on `GeometryUtils` and `TextureUtils`.      | Petermann (likely) |
+| **LinePicking/TextureUtils.cs** | Utility functions for texture manipulation used in line picking: reflecting textures, saving debug textures, getting pixel brightness.                                                                                | Petermann (likely) |
+| **LinePicking/GeometryUtils.cs** | Provides geometric helper functions (triangle area, closest point on triangle, barycentric coordinates) used by `UVHelpers`.                                                                                           | Petermann (likely) |
+| *LoadFlightLines (Unused)* | *Previously generated radargram meshes from obj/mtl files. Appears superseded by `DataLoader.cs` and is located in the 'Unused' folder.* | *Obsolete* |
 
 <br />
 
